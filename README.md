@@ -72,6 +72,8 @@
     * *완료 작업*: `ale-py` 및 `AutoROM`을 이용한 Atari 환경 구축, `AtariPixelEnv` 래퍼 구현 (64x64 리사이징), TDD 기반 실험 코드 작성 (`src/experiments/atari_experiment.py`).
   * [x] **성능 비교 및 분석**: Flat 모델 vs Hierarchical 모델의 성능(성공률, 학습 속도) 및 계획 수립 능력 비교.
     * *완료 작업*: `ComparisonRunner` 구현, TDD 기반 비교 실험 스크립트 작성 (`src/experiments/run_comparison.py`), JSON 결과 저장 기능 구현.
+  * [ ] **MNIST 분류 실험 (MNIST Classification)**: 정적 이미지에 대한 공간적 계층 구조(Spatial Renormalization) 학습 및 분류 실험 재현.
+    * *필요 작업*: `src/experiments/mnist_experiment.py` 구현, Spatial RGM 모델 정의, 분류 정확도 측정.
 
 ## 🛠 설치 (Installation)
 
@@ -134,6 +136,15 @@ python -m unittest tests/test_phase5_comparison.py
 ```bash
 python -m unittest tests/test_acceptance.py
 ```
+
+## 🧪 실험 목록 (Experiments)
+
+이 프로젝트는 다음의 실험들을 통해 이론을 검증합니다. 각 실험에 대한 자세한 내용은 `docs/experiments/` 폴더의 문서를 참고하세요.
+
+1.  **[Bouncing Ball (Basic)](docs/experiments/01_bouncing_ball.md)**: 단일 계층 Active Inference 모델의 기초 검증.
+2.  **[Atari Breakout (Hierarchical)](docs/experiments/02_atari_breakout.md)**: 계층적 모델(Scale-Free)을 통한 복잡한 환경 제어.
+3.  **[Performance Comparison](docs/experiments/03_performance_comparison.md)**: Flat vs Hierarchical 모델의 성능 비교.
+4.  **[MNIST Classification](docs/experiments/04_mnist_classification.md)**: 정적 이미지에 대한 공간적 계층 구조 학습 및 분류.
 
 ## 📊 시각화 (Visualization)
 
