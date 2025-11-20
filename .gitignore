@@ -38,3 +38,6 @@ comparison_results.json
 *.png
 logs/
 results/
+
+# Data
+data/
