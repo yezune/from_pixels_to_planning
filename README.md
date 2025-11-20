@@ -2,7 +2,7 @@
 
 ## 📖 프로젝트 개요 (Project Overview)
 
-이 저장소는 논문 **"From pixels to planning: Scale-free active inference"**를 체계적으로 분석하고, 이를 바탕으로 실제 코드로 구현하여 이해를 돕기 위해 만들어졌습니다.
+이 저장소는 논문 **["From pixels to planning: Scale-free active inference"](https://arxiv.org/abs/2407.20292)**를 체계적으로 분석하고, 이를 바탕으로 실제 코드로 구현하여 이해를 돕기 위해 만들어졌습니다.
 
 이 프로젝트의 주된 목적은 복잡한 Active Inference(능동적 추론) 이론이 픽셀 단위의 시각적 입력에서부터 상위 수준의 계획(Planning)까지 어떻게 연결되는지 설명하고, 이를 입증하는 실험 코드를 제공하는 것입니다.
 
@@ -143,5 +143,5 @@ Jupyter Notebook을 통해 실험 결과를 시각적으로 확인할 수 있습
 
 ## 📚 참고 문헌 (References)
 
-*   *From pixels to planning: Scale-free active inference* (Paper)
+*   [From pixels to planning: Scale-free active inference](https://arxiv.org/abs/2407.20292) (ArXiv)
 *   [Active Inference Institute](https://www.activeinference.org/)
