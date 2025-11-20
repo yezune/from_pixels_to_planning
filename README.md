@@ -135,6 +135,12 @@ python -m unittest tests/test_phase5_comparison.py
 python -m unittest tests/test_acceptance.py
 ```
 
+## 📊 시각화 (Visualization)
+
+Jupyter Notebook을 통해 실험 결과를 시각적으로 확인할 수 있습니다.
+
+*   **`notebooks/experiments_visualization.ipynb`**: Bouncing Ball 및 Atari 실험의 학습 과정과 모델 재구성 결과, 성능 비교 그래프를 제공합니다.
+
 ## 📚 참고 문헌 (References)
 
 *   *From pixels to planning: Scale-free active inference* (Paper)
