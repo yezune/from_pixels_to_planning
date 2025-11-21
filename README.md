@@ -37,6 +37,9 @@
 * **Scale-Free Dynamics**: 시간적/공간적 스케일에 구애받지 않는 계층적 처리 구조.
 * **Deep Active Inference**: 딥러닝 신경망을 사용하여 고차원 입력(Pixels)을 처리하고 계획(Planning)을 수행하는 방법.
 * **Generative Models**: 에이전트가 세상을 이해하고 예측하기 위해 내부적으로 구축하는 모델.
+* **Planning in Latent Space (잠재 공간에서의 계획)**: 학습된 저차원 잠재 공간에서 효율적으로 다단계 계획을 수립하는 방법.
+  * **MCTS (Monte Carlo Tree Search)**: 불확실성 하에서 최적 행동 시퀀스를 탐색하는 트리 탐색 알고리즘
+  * **Trajectory Optimization**: 미분 가능한 전이 모델을 통해 경로를 최적화하는 경사 기반 방법
 
 ## 🚀 로드맵 (Roadmap)
 
@@ -53,6 +56,9 @@
   * [x] VAE (Variational Autoencoder) 기반의 지각 모델 구현
   * [x] RNN/LSTM 기반의 전이(Transition) 모델 구현
   * [x] Action Selection 및 Planning 알고리즘 구현
+  * [x] **Planning Module (계획 모듈)**: 학습된 잠재 공간에서의 계획 수립
+    * **MCTS (Monte Carlo Tree Search)**: UCB1 기반 트리 탐색으로 다단계 계획 수립
+    * **Trajectory Optimization**: Gradient 기반 및 Cross-Entropy Method를 이용한 경로 최적화
 
 * [x] **Phase 4: 실험 및 시각화**
   * [x] 학습 과정 시각화 (Loss, Free Energy)
@@ -141,10 +147,11 @@ python -m unittest tests/test_acceptance.py
 
 이 프로젝트는 다음의 실험들을 통해 이론을 검증합니다. 각 실험에 대한 자세한 내용은 `docs/experiments/` 폴더의 문서를 참고하세요.
 
-1.  **[Bouncing Ball (Basic)](docs/experiments/01_bouncing_ball.md)**: 단일 계층 Active Inference 모델의 기초 검증.
-2.  **[Atari Breakout (Hierarchical)](docs/experiments/02_atari_breakout.md)**: 계층적 모델(Scale-Free)을 통한 복잡한 환경 제어.
-3.  **[Performance Comparison](docs/experiments/03_performance_comparison.md)**: Flat vs Hierarchical 모델의 성능 비교.
-4.  **[MNIST Classification](docs/experiments/04_mnist_classification.md)**: 정적 이미지에 대한 공간적 계층 구조 학습 및 분류.
+1. **[RGM Fundamentals](docs/experiments/01_rgm_fundamentals.md)**: Renormalization Group Method의 핵심 개념 시각화 (추상화, 생성, 지역성).
+2. **[MNIST Classification](docs/experiments/02_mnist_classification.md)**: 정적 이미지에 대한 공간적 계층 구조 학습 및 분류.
+3. **[Bouncing Ball (Basic)](docs/experiments/03_bouncing_ball.md)**: 단일 계층 Active Inference 모델의 기초 검증.
+4. **[Atari Breakout (Planning)](docs/experiments/04_atari_breakout.md)**: **Planning 모듈 통합** - MCTS와 Trajectory Optimization을 이용한 잠재 공간 계획.
+5. **[Performance Comparison](docs/experiments/05_performance_comparison.md)**: Flat vs Hierarchical 모델의 성능 비교.
 
 ## 📊 시각화 (Visualization)
 

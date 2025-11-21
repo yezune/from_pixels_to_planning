@@ -1,6 +1,8 @@
 import torch
 import torch.nn.functional as F
 import numpy as np
+from src.planning.mcts import MCTSPlanner
+from src.planning.trajectory_optimizer import TrajectoryOptimizer
 
 class ActiveInferenceAgent:
     def __init__(self, vae, transition_model, action_dim, device='cpu'):
@@ -104,6 +106,74 @@ class ActiveInferenceAgent:
         action_tensor = torch.tensor([best_action], device=self.device)
         with torch.no_grad():
              _, self.current_hidden = self.transition_model(
+                z_t, action_tensor, self.current_hidden
+            )
+            
+        return best_action
+
+    def select_action_with_planning(self, observation, method='mcts', 
+                                   horizon=5, num_simulations=50, goal_state=None):
+        """
+        Selects an action using tree search or trajectory optimization in latent space.
+        
+        Args:
+            observation: Current observation
+            method: 'mcts' or 'trajectory'
+            horizon: Planning horizon (steps to look ahead)
+            num_simulations: Number of MCTS simulations (for MCTS only)
+            goal_state: Optional goal state for goal-directed planning
+            
+        Returns:
+            Selected action (int)
+        """
+        # 1. Infer current latent state
+        z_t = self.infer_state(observation)
+        self.current_z = z_t
+        
+        if method == 'mcts':
+            # Use Monte Carlo Tree Search
+            planner = MCTSPlanner(
+                transition_model=self.transition_model,
+                action_dim=self.action_dim,
+                num_simulations=num_simulations,
+                device=self.device
+            )
+            
+            # Plan with or without goal
+            # Note: MCTS doesn't use hidden_state parameter
+            if goal_state is not None:
+                best_action = planner.plan(z_t, goal_state=goal_state)
+            else:
+                best_action = planner.plan(z_t)
+                
+        elif method == 'trajectory':
+            # Use Gradient-based Trajectory Optimization
+            optimizer = TrajectoryOptimizer(
+                transition_model=self.transition_model,
+                action_dim=self.action_dim,
+                horizon=horizon,
+                device=self.device
+            )
+            
+            # If no goal provided, use zero vector as default goal
+            if goal_state is None:
+                goal_state = torch.zeros_like(z_t)
+            
+            # Optimize trajectory
+            action_sequence = optimizer.optimize(
+                z_t, goal_state=goal_state, num_iterations=10
+            )
+            
+            # Return first action from optimized sequence
+            best_action = action_sequence[0]
+            
+        else:
+            raise ValueError(f"Unknown planning method: {method}. Use 'mcts' or 'trajectory'")
+        
+        # Update internal hidden state with chosen action
+        action_tensor = torch.tensor([best_action], device=self.device)
+        with torch.no_grad():
+            _, self.current_hidden = self.transition_model(
                 z_t, action_tensor, self.current_hidden
             )
             
