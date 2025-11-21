@@ -38,6 +38,8 @@ class TestHierarchicalTrainer(unittest.TestCase):
         
         # Mock Environment
         self.env = MagicMock()
+        # Ensure target_size is not present to avoid BaseTrainer overriding buffer shape
+        del self.env.target_size
         self.env.observation_space.shape = (3, 64, 64)
         self.env.reset.return_value = (torch.zeros(3, 64, 64), {})
         self.env.step.return_value = (torch.zeros(3, 64, 64), 0.0, False, False, {})

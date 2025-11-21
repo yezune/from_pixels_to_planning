@@ -2,7 +2,14 @@ import unittest
 import torch
 import gymnasium as gym
 import os
+import sys
 import shutil
+
+# Add project root to path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
 from src.envs.synthetic_env import BouncingBallEnv
 from src.envs.atari_env import AtariPixelEnv
 from src.models.vae import VAE
@@ -160,4 +167,13 @@ class TestAcceptance(unittest.TestCase):
         print("[Acceptance] Comparison Runner Passed.")
 
 if __name__ == '__main__':
-    unittest.main()
+    # When run directly, execute all tests in the tests/ directory
+    loader = unittest.TestLoader()
+    start_dir = os.path.dirname(os.path.abspath(__file__))
+    suite = loader.discover(start_dir, pattern='test_*.py')
+    
+    runner = unittest.TextTestRunner(verbosity=2)
+    result = runner.run(suite)
+    
+    if not result.wasSuccessful():
+        sys.exit(1)
