@@ -41,3 +41,65 @@
     * **Level 3**: Level 2 시퀀스들의 시퀀스(서사/장기 계획)를 나타냅니다.
     * 상위 레벨로 갈수록 시간이 "압축(Coarse-graining)"되어 더 긴 시간 범위를 다루게 됩니다.
 3. **프랙탈 구조 (Fractal Structure)**: 모델은 세상을 "입자들의 입자(Particles of particles)"로 봅니다. 한 스케일의 상태는 하위 스케일의 궤적을 담는 컨테이너 역할을 하며, 이를 통해 깊이의 제한 없이 확장 가능합니다.
+
+## 4. 구현된 아키텍처 (Implemented Architecture)
+
+본 프로젝트에서 구현된 실제 아키텍처는 다음과 같습니다.
+
+### 4.1 3-Level Hierarchical RGM
+
+논문의 개념을 구체화하여 3단계 계층 구조를 구현했습니다.
+
+| Level | 역할 | Latent Dim | Temporal Resolution (τ) | 구성 요소 |
+|-------|------|------------|-------------------------|-----------|
+| **Level 2** | **Path / Goal** | 8D | 16 steps | VAE (16D→8D) + Transition |
+| **Level 1** | **Feature / Sub-goal** | 16D | 4 steps | VAE (32D→16D) + Transition |
+| **Level 0** | **Pixel / Action** | 32D | 1 step | VAE (Pixel→32D) + Transition |
+
+* **Level 0 (Pixel Level)**:
+    * 매 스텝(τ=1)마다 픽셀 입력을 처리하고 즉각적인 액션을 선택합니다.
+    * VAE는 64x64 RGB 이미지를 32차원 잠재 공간으로 압축합니다.
+* **Level 1 (Feature Level)**:
+    * 4 스텝(τ=4)마다 업데이트되며, Level 0의 상태를 요약하고 단기 목표(Sub-goal)를 설정합니다.
+    * Level 0의 32D 상태를 16D로 압축합니다.
+* **Level 2 (Path Level)**:
+    * 16 스텝(τ=16)마다 업데이트되며, 장기적인 목표(Long-term Goal)를 설정합니다.
+    * Level 1의 16D 상태를 8D로 압축합니다.
+
+### 4.2 Planning & Action Selection
+
+계층적 구조를 활용한 Planning은 다음과 같이 이루어집니다.
+
+1. **Top-Down Goal Setting**:
+    * 상위 레벨(Level 2)에서 장기 목표를 설정하면, 이는 하위 레벨(Level 1)의 사전 믿음(Prior)으로 작용합니다.
+    * Level 1은 이 목표를 달성하기 위한 세부 목표를 생성하여 Level 0에 전달합니다.
+2. **MCTS (Monte Carlo Tree Search) Integration**:
+    * **Level 1 Latent Space**에서 MCTS를 수행하여 효율적인 계획을 수립합니다.
+    * 픽셀 공간이 아닌 압축된 잠재 공간에서 시뮬레이션하므로 계산 효율성이 높습니다.
+    * 4 스텝마다 Re-planning을 수행하여 변화하는 환경에 적응합니다.
+3. **Action Selection**:
+    * Level 0는 상위 레벨의 가이드와 현재 관측을 바탕으로 최종 액션을 선택합니다.
+    * Random, Flat, Hierarchical, MCTS 등 다양한 정책을 비교 실험할 수 있습니다.
+
+### 4.3 Multi-Game Validation
+
+이 아키텍처는 특정 게임에 종속되지 않는 일반화 능력을 가집니다.
+
+* **Atari Breakout**: 벽돌 깨기, 공의 궤적 예측 및 전략적 패들 이동. (Hierarchical Planning 효과 큼)
+* **Atari Pong**: 상대 AI와의 대결, 빠른 반응 속도 중요. (Random/Reactive Policy가 효과적일 수 있음)
+* **Bouncing Ball**: 물리 법칙 학습 및 예측 검증용 Toy Environment.
+
+## 5. 데이터 흐름 (Data Flow)
+
+1. **Bottom-Up Inference**:
+   `Observation (Pixel) → Level 0 Latent → Level 1 Latent → Level 2 Latent`
+   (현재 상태를 모든 레벨에서 추론)
+
+2. **Top-Down Prediction**:
+   `Level 2 Prior → Level 1 Prior → Level 0 Prior`
+   (상위 레벨의 예측이 하위 레벨의 가이드가 됨)
+
+3. **Action Execution**:
+   `Level 0 Latent + Goal → Action`
+   (최하위 레벨에서 환경과 상호작용)
+
