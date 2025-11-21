@@ -56,10 +56,10 @@ class MNISTExperiment:
         self.model.set_temperature(temp)
         
         # Loss Weighting:
-        # Classification weight: 20.0 (Constant high)
-        # VAE weight: 0.0 -> 1.0 (Linear Warm-up over first 5 epochs)
-        vae_weight = min(1.0, epoch / 5.0)
-        cls_weight = 20.0
+        # Classification weight: 50.0 (Increased from 20.0 for >95% acc)
+        # VAE weight: 0.0 -> 1.0 (Linear Warm-up over first 8 epochs)
+        vae_weight = min(1.0, epoch / 8.0)
+        cls_weight = 50.0
         
         self.optimizer.zero_grad()
         
