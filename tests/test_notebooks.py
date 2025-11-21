@@ -15,7 +15,8 @@ class TestNotebooks(unittest.TestCase):
             '02_mnist_classification.ipynb',
             '03_bouncing_ball.ipynb',
             '04_atari_breakout.ipynb',
-            '05_performance_comparison.ipynb'
+            '05_performance_comparison.ipynb',
+            '06_hierarchical_planning_results.ipynb'
         ]
 
     def _test_notebook(self, notebook_name):
@@ -77,6 +78,9 @@ class TestNotebooks(unittest.TestCase):
 
     def test_05_performance_comparison(self):
         self._test_notebook('05_performance_comparison.ipynb')
+
+    def test_06_hierarchical_planning_results(self):
+        self._test_notebook('06_hierarchical_planning_results.ipynb')
 
 if __name__ == '__main__':
     unittest.main()
