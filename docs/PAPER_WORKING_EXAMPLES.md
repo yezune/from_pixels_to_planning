@@ -410,13 +410,43 @@ python src/experiments/test_pong_planning.py \
 
 ### 추가 개선 가능 영역
 
-🔄 **향후 작업**:
+✅ **완료된 확장 작업**:
+1. ✅ Pong 실험 완료 (VAE, Hierarchical, Planning)
+2. ✅ **MCTS 기반 Planning 구현 완료** (2025-11-22)
+   - MCTSPlanner를 Hierarchical Model에 통합
+   - Level 1 latent space에서 planning 수행
+   - 4 step마다 replan하여 효율성 개선
+
+**MCTS Planning 결과** (Breakout, 5 episodes):
+
+| Method | Avg Reward | Std | Best |
+|--------|-----------|-----|------|
+| Random | 1.20 | 0.98 | 3.0 |
+| Flat | 0.60 | 0.80 | 2.0 |
+| Hierarchical | **1.20** | 0.75 | 2.0 |
+| **MCTS** | 0.40 | 0.49 | 1.0 |
+
+**MCTS 분석**:
+- ⚠️ **예상보다 낮은 성능**: MCTS (0.40) < Hierarchical (1.20)
+- 🔍 **가능한 원인**:
+  1. 시뮬레이션 횟수 부족 (10 simulations/step)
+  2. Reward function 부재 (goal_state=None)
+  3. Level 1 transition model의 부정확성
+  4. 탐색 vs 활용 균형 (exploration_weight=1.414)
+- 📊 **실행 시간**: 2.52s/episode (hierarchical의 약 75%)
+
+**개선 방향**:
+1. 더 많은 시뮬레이션 (50-100 simulations/step)
+2. 명확한 목표 상태 설정 (high score regions)
+3. 더 나은 rollout policy (random 대신 heuristic)
+4. Level 0 transition model 개선
+
+🔄 **추가 가능 작업**:
 1. Toy problem 구현 (1D 시계열 데이터)
-2. ✅ Pong 실험 스크립트 완료 → 모델 학습 및 평가 진행 중
-3. 추가 Atari 게임 (Space Invaders, Pac-Man 등)
-4. MCTS 기반 Planning 구현
-5. 4-level 이상 계층 구조 실험
-6. 다양한 시간 스케일 조합 테스트 (τ=1,4,16 외)
+2. 추가 Atari 게임 (Space Invaders, Pac-Man 등)
+3. 4-level 이상 계층 구조 실험
+4. 다양한 시간 스케일 조합 테스트 (τ=1,4,16 외)
+5. MCTS 하이퍼파라미터 튜닝 및 성능 개선
 
 ---
 
