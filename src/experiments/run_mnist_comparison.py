@@ -8,7 +8,7 @@ def run_comparison():
     print("Running MNIST Comparison Experiment (10 Epochs)...")
     
     # Setup
-    epochs = 10
+    epochs = 15
     experiment = MNISTExperiment(epochs=epochs, batch_size=64)
     
     # Tracking
