@@ -1,7 +1,14 @@
 import os
+import sys
 import torch
 import gymnasium as gym
 import matplotlib.pyplot as plt
+
+# Add project root to Python path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 from src.envs.env_wrapper import ActiveInferenceEnv
 from src.envs.synthetic_env import BouncingBallEnv
 from src.models.vae import VAE
