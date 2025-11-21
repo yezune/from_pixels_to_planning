@@ -1,4 +1,4 @@
-# Experiment 3: Performance Comparison (Flat vs Hierarchical)
+# Experiment 5: Performance Comparison (Flat vs Hierarchical)
 
 ## 1. 이론적 배경 (Theoretical Background)
 

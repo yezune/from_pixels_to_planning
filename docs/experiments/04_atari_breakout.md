@@ -1,4 +1,4 @@
-# Experiment 2: Atari Breakout (Hierarchical Active Inference)
+# Experiment 4: Atari Breakout (Hierarchical Active Inference)
 
 ## 1. 이론적 배경 (Theoretical Background)
 

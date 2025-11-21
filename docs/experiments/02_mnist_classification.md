@@ -1,4 +1,4 @@
-# Experiment 4: MNIST Classification (Hierarchical Static Inference)
+# Experiment 2: MNIST Classification (Hierarchical Static Inference)
 
 ## 1. 이론적 배경 (Theoretical Background)
 

@@ -11,10 +11,11 @@ class TestNotebooks(unittest.TestCase):
         
         # List of notebooks to test
         self.notebooks_to_test = [
-            '01_bouncing_ball.ipynb',
-            '02_atari_breakout.ipynb',
-            '03_performance_comparison.ipynb',
-            '04_mnist_classification.ipynb'
+            '01_rgm_fundamentals.ipynb',
+            '02_mnist_classification.ipynb',
+            '03_bouncing_ball.ipynb',
+            '04_atari_breakout.ipynb',
+            '05_performance_comparison.ipynb'
         ]
 
     def _test_notebook(self, notebook_name):
@@ -62,17 +63,20 @@ class TestNotebooks(unittest.TestCase):
         except Exception as e:
             self.fail(f"Notebook {notebook_name} execution failed: {e}")
 
-    def test_01_bouncing_ball(self):
-        self._test_notebook('01_bouncing_ball.ipynb')
+    def test_01_rgm_fundamentals(self):
+        self._test_notebook('01_rgm_fundamentals.ipynb')
 
-    def test_02_atari_breakout(self):
-        self._test_notebook('02_atari_breakout.ipynb')
+    def test_02_mnist_classification(self):
+        self._test_notebook('02_mnist_classification.ipynb')
 
-    def test_03_performance_comparison(self):
-        self._test_notebook('03_performance_comparison.ipynb')
+    def test_03_bouncing_ball(self):
+        self._test_notebook('03_bouncing_ball.ipynb')
 
-    def test_04_mnist_classification(self):
-        self._test_notebook('04_mnist_classification.ipynb')
+    def test_04_atari_breakout(self):
+        self._test_notebook('04_atari_breakout.ipynb')
+
+    def test_05_performance_comparison(self):
+        self._test_notebook('05_performance_comparison.ipynb')
 
 if __name__ == '__main__':
     unittest.main()

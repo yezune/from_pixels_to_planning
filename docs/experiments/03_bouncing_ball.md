@@ -1,4 +1,4 @@
-# Experiment 1: Bouncing Ball (Basic Active Inference)
+# Experiment 3: Bouncing Ball (Basic Active Inference)
 
 ## 1. 이론적 배경 (Theoretical Background)
 
