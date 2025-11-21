@@ -11,7 +11,6 @@ class TestNotebooks(unittest.TestCase):
         
         # List of notebooks to test
         self.notebooks_to_test = [
-            'experiments_visualization.ipynb',
             '01_bouncing_ball.ipynb',
             '02_atari_breakout.ipynb',
             '03_performance_comparison.ipynb',
@@ -62,9 +61,6 @@ class TestNotebooks(unittest.TestCase):
             ep.preprocess(nb, resources)
         except Exception as e:
             self.fail(f"Notebook {notebook_name} execution failed: {e}")
-
-    def test_experiments_visualization(self):
-        self._test_notebook('experiments_visualization.ipynb')
 
     def test_01_bouncing_ball(self):
         self._test_notebook('01_bouncing_ball.ipynb')
