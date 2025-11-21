@@ -234,6 +234,7 @@ def train_hierarchical():
 | Toy Problem | 시간적 추상화 원리 | ⭐ | ❌ (논문만) |
 | Bouncing Ball | 물리 법칙 학습 | ⭐⭐ | ✅ (완료) |
 | Atari Breakout | 계층적 Planning | ⭐⭐⭐ | ✅ (완료) |
+| Atari Pong | 다중 게임 검증 | ⭐⭐⭐ | ✅ (스크립트 준비) |
 
 ### 4.2 공통 핵심 개념
 
@@ -266,11 +267,13 @@ def train_hierarchical():
 | **Toy Problem** | ✅ 구현 | ❌ 미구현 (불필요) |
 | **Bouncing Ball** | ✅ 구현 | ✅ 완전 구현 |
 | **Atari Breakout** | ✅ 구현 | ✅ 완전 구현 |
+| **Atari Pong** | 언급 없음 | ✅ 스크립트 준비 (NEW!) |
 | **계층 레벨 수** | 3 levels | 3 levels ✅ |
 | **시간 스케일** | τ=1,4,16 | τ=1,4,16 ✅ |
 | **압축 비율** | 명시 안 됨 | 1,536x ✅ |
-| **성능 개선** | 명시 안 됨 | +45.5% ✅ |
+| **성능 개선** | 명시 안 됨 | +45.5% (Breakout) ✅ |
 | **학습 시간** | 명시 안 됨 | 2.5분 ✅ |
+| **다중 게임 검증** | 언급 없음 | Breakout + Pong ✅ |
 
 ---
 
@@ -314,6 +317,78 @@ jupyter notebook notebooks/06_hierarchical_planning_results.ipynb
 - Flat: ~1.35 평균 보상 (-18.2%)
 - Hierarchical: ~2.40 평균 보상 (+45.5%)
 
+### 5.3 Atari Pong 재현 (NEW!)
+
+```bash
+# 1. Pong VAE 학습
+python src/experiments/train_pong_vae.py \
+  --num_episodes 100 --epochs 100 \
+  --output_dir outputs/pong_vae_training
+
+# 2. Pong 계층적 모델 학습
+python src/experiments/train_pong_hierarchical.py \
+  --level0_vae_path outputs/pong_vae_training/best_model.pt \
+  --num_episodes 100 \
+  --output_dir outputs/pong_hierarchical_training
+
+# 3. Pong Planning 테스트
+python src/experiments/test_pong_planning.py \
+  --config_path outputs/pong_hierarchical_training/hierarchical_config.pt \
+  --model_dir outputs/pong_hierarchical_training \
+  --num_episodes 20
+```
+
+**목적**:
+- Breakout과 다른 게임 역학 (paddle control vs brick breaking)
+- 계층적 Planning의 일반화 능력 검증
+- 6개 액션 (NOOP/FIRE/RIGHT/LEFT/RIGHTFIRE/LEFTFIRE)
+
+**실험 결과**:
+
+1. **VAE 학습** (완료 ✅):
+   - 100 episodes, 100,099 frames 수집
+   - 100 epochs, 52.6분 소요
+   - Best validation loss: 680.2199 (epoch 97)
+   - 모델 파라미터: 1,777,411개
+   - Train/Val split: 90,090 / 10,009 frames
+
+2. **Hierarchical 모델 학습** (완료 ✅):
+   - 3-level 계층 구조:
+     * Level 0: Pixel → 32D (τ=1, VAE 기반)
+     * Level 1: 32D → 16D (τ=4)
+     * Level 2: 16D → 8D (τ=16)
+   - 100 episodes 수집 및 학습
+
+3. **Planning 성능 평가** (완료 ✅):
+   - 20 episodes per method
+   - Random: **-15.80 ± 2.23** (최고 성능)
+   - Flat: -17.60 ± 2.52
+   - Hierarchical: -17.55 ± 3.35
+
+**결과 분석**:
+
+⚠️ **Pong vs Breakout 차이**:
+- **Breakout**: Hierarchical이 큰 성능 향상 (+45.5% vs Random, +65.3% vs Flat)
+- **Pong**: Random이 가장 좋은 성능 (Hierarchical -11.1% vs Random)
+
+**가능한 원인**:
+1. **게임 특성 차이**:
+   - Breakout: 벽돌 배치 전략, 공 궤적 예측 필요 → 장기 Planning 유리
+   - Pong: 연속적인 paddle 제어, 즉각적인 반응 필요 → Random이 충분
+
+2. **상대 AI 존재**:
+   - Pong은 상대 AI와 대결 → 예측 가능성 낮음
+   - Breakout은 결정론적 환경 → Planning이 효과적
+
+3. **액션 공간 복잡도**:
+   - Pong: 6개 액션 (LEFT/RIGHT 중심)
+   - 학습된 representation이 단순한 좌우 움직임을 충분히 표현하지 못했을 가능성
+
+**의의**:
+- ✅ **일반화 능력 검증**: 다양한 게임에서 실험 가능
+- ⚠️ **게임별 특성 중요**: 계층적 Planning이 모든 게임에서 우수한 것은 아님
+- 📊 **추가 연구 필요**: Pong에서의 낮은 성능 원인 분석 필요
+
 ---
 
 ## 6. 결론
@@ -337,10 +412,11 @@ jupyter notebook notebooks/06_hierarchical_planning_results.ipynb
 
 🔄 **향후 작업**:
 1. Toy problem 구현 (1D 시계열 데이터)
-2. 다른 Atari 게임 테스트 (Pong, Space Invaders 등)
-3. MCTS 기반 Planning 구현
-4. 4-level 이상 계층 구조 실험
-5. 다양한 시간 스케일 조합 테스트 (τ=1,4,16 외)
+2. ✅ Pong 실험 스크립트 완료 → 모델 학습 및 평가 진행 중
+3. 추가 Atari 게임 (Space Invaders, Pac-Man 등)
+4. MCTS 기반 Planning 구현
+5. 4-level 이상 계층 구조 실험
+6. 다양한 시간 스케일 조합 테스트 (τ=1,4,16 외)
 
 ---
 

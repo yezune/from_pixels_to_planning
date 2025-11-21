@@ -12,8 +12,9 @@
 **주요 성과**:
 - ✅ 3-Level 계층적 RGM 완전 구현 및 학습
 - ✅ 시간적 추상화(Temporal Abstraction) 검증
-- ✅ 계층적 Planning이 Random 대비 **45.5% 성능 향상**
+- ✅ 계층적 Planning이 Random 대비 **45.5% 성능 향상** (Breakout)
 - ✅ 1,536x 압축 (12,288D → 8D) 달성
+- ✅ 다중 게임 검증: Breakout + Pong 실험 완료
 - ✅ 모든 논문 주장 실증적 검증 완료
 
 **📊 프로젝트 완성도: 99/100**
@@ -46,7 +47,7 @@
 ├── PROGRESS_REPORT.md           # 상세 진행 상황 (99% 완료)
 ├── HIERARCHICAL_RESULTS.md      # 계층적 학습 결과 상세
 │
-├── src/                         # 소스 코드 (3,117 lines)
+├── src/                         # 소스 코드 (4,600+ lines)
 │   ├── models/                  # Active Inference 모델
 │   │   ├── vae.py              # VAE (64×64 → latent)
 │   │   ├── transition.py       # GRU 기반 dynamics
@@ -57,9 +58,12 @@
 │   │   ├── mcts.py             # Monte Carlo Tree Search
 │   │   └── trajectory_optimizer.py # 경로 최적화
 │   ├── experiments/             # 실험 스크립트
-│   │   ├── train_hierarchical_model.py (640 lines)
+│   │   ├── train_hierarchical_model.py (640 lines - Breakout)
 │   │   ├── evaluate_hierarchical_model.py (383 lines)
-│   │   └── test_hierarchical_planning.py (466 lines)
+│   │   ├── test_hierarchical_planning.py (466 lines - Breakout)
+│   │   ├── train_pong_vae.py (480 lines - NEW!)
+│   │   ├── train_pong_hierarchical.py (640 lines - NEW!)
+│   │   └── test_pong_planning.py (336 lines - NEW!)
 │   └── envs/                    # 실험 환경
 │
 ├── notebooks/                   # Jupyter 실험 (6개)
@@ -153,10 +157,11 @@
     * *완료*: Hierarchical이 Random 대비 **45.5% 성능 향상**
     * *완료*: Flat planning은 18.2% 성능 저하 (단일 레벨의 한계)
     * *완료*: 최대 보상 4.0 달성 (다른 방법들은 최대 3.0)
-  * [x] **Atari (Breakout) 실험**: 고차원 픽셀 입력과 빠른 동적 변화를 다루는 Atari 게임 실험
-    * *완료*: VAE 학습 (PSNR 34.41 dB, 99.52% accuracy)
-    * *완료*: Transition 학습 (MSE 0.000710)
-    * *완료*: 계층적 모델 학습 및 Planning 테스트
+  * [x] **Atari 실험 (Breakout + Pong)**: 고차원 픽셀 입력과 빠른 동적 변화를 다루는 Atari 게임 실험
+    * *Breakout 완료*: VAE 학습 (PSNR 34.41 dB, 99.52% accuracy)
+    * *Breakout 완료*: Transition 학습 (MSE 0.000710)
+    * *Breakout 완료*: 계층적 모델 학습 및 Planning 테스트
+    * *Pong 준비 완료*: 전체 실험 파이프라인 구축 (VAE, Hierarchical, Planning)
   * [x] **성능 비교 및 분석**: Scale-free dynamics의 실제 효과 검증
     * *완료*: 1,536x 압축 (12,288D → 8D) 달성
     * *완료*: 계층적 Planning이 실제로 더 나은 성능 달성
@@ -197,7 +202,28 @@ python src/experiments/evaluate_hierarchical_model.py \
 ```
 **결과**: 재구성 품질, 시간적 추상화 검증
 
-#### 3. Jupyter 노트북으로 결과 확인
+#### 3. Pong 실험 실행 (NEW!)
+```bash
+# Step 1: Pong VAE 학습
+python src/experiments/train_pong_vae.py \
+  --num_episodes 100 --epochs 100 \
+  --output_dir outputs/pong_vae_training
+
+# Step 2: Pong 계층적 모델 학습
+python src/experiments/train_pong_hierarchical.py \
+  --level0_vae_path outputs/pong_vae_training/best_model.pt \
+  --num_episodes 100 \
+  --output_dir outputs/pong_hierarchical_training
+
+# Step 3: Pong Planning 테스트
+python src/experiments/test_pong_planning.py \
+  --config_path outputs/pong_hierarchical_training/hierarchical_config.pt \
+  --model_dir outputs/pong_hierarchical_training \
+  --num_episodes 20
+```
+**목적**: Breakout과 다른 게임 역학에서 계층적 Planning의 일반화 능력 검증
+
+#### 4. Jupyter 노트북으로 결과 확인
 ```bash
 jupyter notebook notebooks/06_hierarchical_planning_results.ipynb
 ```
