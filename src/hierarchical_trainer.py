@@ -3,20 +3,11 @@ import torch.optim as optim
 import torch.nn.functional as F
 import numpy as np
 from src.utils.buffer import ReplayBuffer
+from src.base_trainer import BaseTrainer
 
-class HierarchicalTrainer:
+class HierarchicalTrainer(BaseTrainer):
     def __init__(self, env, agent, buffer_size=10000, batch_size=64, lr=1e-3, device='cpu'):
-        self.env = env
-        self.agent = agent
-        self.device = device
-        self.batch_size = batch_size
-        
-        self.buffer = ReplayBuffer(
-            capacity=buffer_size,
-            obs_shape=env.observation_space.shape,
-            action_dim=agent.action_dim,
-            device=device
-        )
+        super().__init__(env, agent, buffer_size, batch_size, lr, device)
         
         # Optimizers for Level 1
         self.vae1_optimizer = optim.Adam(self.agent.vae1.parameters(), lr=lr)
@@ -26,20 +17,7 @@ class HierarchicalTrainer:
         self.vae2_optimizer = optim.Adam(self.agent.vae2.parameters(), lr=lr)
         self.trans2_optimizer = optim.Adam(self.agent.trans2.parameters(), lr=lr)
 
-    def collect_data(self, num_steps):
-        obs, _ = self.env.reset()
-        self.agent.reset()
-        
-        for _ in range(num_steps):
-            action = self.agent.select_action(obs)
-            next_obs, reward, terminated, truncated, _ = self.env.step(action)
-            
-            self.buffer.add(obs, action, reward, next_obs, float(terminated))
-            
-            obs = next_obs
-            if terminated or truncated:
-                obs, _ = self.env.reset()
-                self.agent.reset()
+    # collect_data is inherited from BaseTrainer
 
     def train_step(self):
         if self.buffer.size < self.batch_size:
@@ -55,10 +33,9 @@ class HierarchicalTrainer:
         
         # 1. VAE1 Update
         recon_batch, mu, logvar = self.agent.vae1(obs)
-        # Simple VAE Loss: MSE + KLD
-        recon_loss = F.mse_loss(recon_batch, obs, reduction='sum') / self.batch_size
-        kld_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()) / self.batch_size
-        vae1_loss = recon_loss + kld_loss
+        # Use BaseVAE loss function
+        loss_dict = self.agent.vae1.loss_function(recon_batch, obs, mu, logvar)
+        vae1_loss = loss_dict['loss'] / self.batch_size
         
         self.vae1_optimizer.zero_grad()
         vae1_loss.backward()
@@ -99,9 +76,8 @@ class HierarchicalTrainer:
         
         recon_z, mu2, logvar2 = self.agent.vae2(z_t_input)
         
-        recon2_loss = F.mse_loss(recon_z, z_t_input, reduction='sum') / self.batch_size
-        kld2_loss = -0.5 * torch.sum(1 + logvar2 - mu2.pow(2) - logvar2.exp()) / self.batch_size
-        vae2_loss = recon2_loss + kld2_loss
+        loss_dict2 = self.agent.vae2.loss_function(recon_z, z_t_input, mu2, logvar2)
+        vae2_loss = loss_dict2['loss'] / self.batch_size
         
         self.vae2_optimizer.zero_grad()
         vae2_loss.backward()

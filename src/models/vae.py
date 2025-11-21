@@ -1,8 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from src.models.base_vae import BaseVAE
 
-class VAE(nn.Module):
+class VAE(BaseVAE):
     def __init__(self, input_shape=(1, 64, 64), latent_dim=32):
         super(VAE, self).__init__()
         self.input_shape = input_shape
@@ -49,35 +50,9 @@ class VAE(nn.Module):
         logvar = self.fc_logvar(result)
         return mu, logvar
 
-    def reparameterize(self, mu, logvar):
-        std = torch.exp(0.5 * logvar)
-        eps = torch.randn_like(std)
-        return mu + eps * std
-
     def decode(self, z):
         result = self.decoder_input(z)
         result = self.decoder(result)
         return result
 
-    def forward(self, x):
-        mu, logvar = self.encode(x)
-        z = self.reparameterize(mu, logvar)
-        recon = self.decode(z)
-        return recon, mu, logvar
-
-    def loss_function(self, recon_x, x, mu, logvar, kld_weight=1.0):
-        # Reconstruction loss (MSE or BCE)
-        # Using MSE here as inputs are normalized [0, 1] but not strictly binary
-        recon_loss = F.mse_loss(recon_x, x, reduction='sum')
-        
-        # KL Divergence
-        # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
-        kld_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-
-        loss = recon_loss + kld_weight * kld_loss
-        
-        return {
-            'loss': loss,
-            'recon_loss': recon_loss,
-            'kld_loss': kld_loss
-        }
+    # reparameterize, forward, loss_function are inherited from BaseVAE

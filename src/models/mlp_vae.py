@@ -1,8 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from src.models.base_vae import BaseVAE
 
-class MlpVAE(nn.Module):
+class MlpVAE(BaseVAE):
     def __init__(self, input_dim=32, latent_dim=16, hidden_dim=64):
         super(MlpVAE, self).__init__()
         self.input_dim = input_dim
@@ -31,16 +32,7 @@ class MlpVAE(nn.Module):
         h = self.encoder(x)
         return self.fc_mu(h), self.fc_logvar(h)
 
-    def reparameterize(self, mu, logvar):
-        std = torch.exp(0.5 * logvar)
-        eps = torch.randn_like(std)
-        return mu + eps * std
-
     def decode(self, z):
         return self.decoder(z)
 
-    def forward(self, x):
-        mu, logvar = self.encode(x)
-        z = self.reparameterize(mu, logvar)
-        recon_x = self.decode(z)
-        return recon_x, mu, logvar
+    # reparameterize, forward, loss_function are inherited from BaseVAE
