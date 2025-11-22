@@ -89,6 +89,19 @@
 * **Atari Pong**: 상대 AI와의 대결, 빠른 반응 속도 중요. (Random/Reactive Policy가 효과적일 수 있음)
 * **Bouncing Ball**: 물리 법칙 학습 및 예측 검증용 Toy Environment.
 
+### 4.4 Hybrid Architecture for Reactive Games (New)
+
+Pong과 같이 빠른 반응속도(High Reactivity)와 속도 정보(Velocity)가 중요한 게임에서의 성능 한계를 극복하기 위해, **Hybrid Architecture**를 도입합니다.
+
+* **Reactive Component (Fast Path)**:
+  * **Frame Stacking**: 4개의 연속된 프레임을 입력으로 사용하여 공의 속도와 방향 정보를 포착합니다.
+  * **Model-Free Policy (DQN)**: 복잡한 생성 모델을 거치지 않고, 입력에서 바로 액션을 매핑하는 가벼운 신경망을 사용합니다.
+  * **역할**: 공이 패들에 가까워지는 등 즉각적인 반응이 필요한 상황(Emergency)을 처리합니다.
+* **Integration Strategy**:
+  * 평상시에는 **Hierarchical Planner (Slow Path)**가 장기적인 전략을 수립합니다.
+  * 긴급 상황이나 빠른 반응이 요구되는 구간에서는 **Reactive Component**가 제어권을 가집니다.
+  * 이는 인간의 인지 과정(System 1: 직관/반응 vs System 2: 추론/계획)과 유사한 구조입니다.
+
 ## 5. 데이터 흐름 (Data Flow)
 
 1. **Bottom-Up Inference**:

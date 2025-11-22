@@ -244,3 +244,30 @@ from_pixels_to_planning/
 **아카이빙 완료일**: 2025년 11월 22일  
 **작성자**: GitHub Copilot (Claude Sonnet 4.5)  
 **프로젝트 상태**: ✅ **완료 및 아카이빙됨**
+
+---
+
+## 🔄 추가 업데이트: Pong 성능 개선 (Hybrid Architecture)
+
+**날짜**: 2025년 11월 22일
+**작업**: Pong 게임에서의 성능 저하 원인 분석 및 Hybrid Architecture 도입
+
+### 주요 변경 사항
+
+1. **원인 분석 (`notebooks/07_pong_analysis_and_improvement.ipynb`)**:
+   - 기존 계층적 모델의 Latency 문제와 단일 프레임 입력의 한계(속도 정보 부재) 확인.
+2. **Hybrid Architecture 설계 (`docs/architecture.md`)**:
+   - **Fast Path (Reactive)**: Frame Stacking + DQN으로 빠른 반응 처리.
+   - **Slow Path (Planning)**: 기존 Hierarchical Planner로 장기 전략 수립.
+3. **구현 및 검증 (`src/experiments/train_pong_dqn.py`)**:
+   - Frame Stacking (k=4) 및 CNN-DQN 구현.
+   - 50 에피소드 테스트 결과: Best Reward **-19.0** (Random -21.0 대비 개선).
+
+### 커밋 메시지
+
+```text
+feat: Implement Hybrid Architecture for Pong (FrameStack + DQN)
+- Add Pong analysis notebook
+- Update architecture docs with Hybrid approach
+- Add DQN training script with Frame Stacking
+```
