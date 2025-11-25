@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
 from torchvision import transforms
 import os
-from src.models.logical_cnn import LogicalCNN
+from src.models.logical_spatial_rgm import LogicalSpatialRGM
 from src.l_fep.loss import LogicalDivergenceLoss
 
 class MNISTLogicalExperiment:
@@ -31,7 +31,8 @@ class MNISTLogicalExperiment:
         ])
         
         # Model Setup
-        self.model = LogicalCNN(num_classes=10).to(self.device)
+        # Use LogicalSpatialRGM for both classification and generation
+        self.model = LogicalSpatialRGM(input_channels=1, latent_dim=32, num_classes=10).to(self.device)
         
         # L-FEP Components
         # Optimizer: Adadelta is used in the reference implementation
@@ -45,10 +46,10 @@ class MNISTLogicalExperiment:
         train_dataset = MNIST(root='./data', train=True, download=True, transform=self.transform)
         test_dataset = MNIST(root='./data', train=False, download=True, transform=self.transform)
         
-        train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
-        test_loader = DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False)
+        self.train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
+        self.test_loader = DataLoader(test_dataset, batch_size=self.batch_size, shuffle=False)
         
-        return train_loader, test_loader
+        return self.train_loader, self.test_loader
 
     def train_step(self, images, labels):
         self.model.train()
@@ -57,16 +58,16 @@ class MNISTLogicalExperiment:
         
         self.optimizer.zero_grad()
         
-        outputs = self.model(images)
+        # Forward pass through RGM
+        recon, z1, z2, z1_prior = self.model(images)
         
-        # LogicalDivergenceLoss expects one-hot targets or handles it internally if we pass indices?
-        # My implementation of LogicalDivergenceLoss handles indices.
-        loss = self.criterion(outputs, labels)
+        # Calculate L-AGI Loss
+        total_loss, _, _, _ = self.model.get_loss(recon, images, z1, z1_prior, z2, labels)
         
-        loss.backward()
+        total_loss.backward()
         self.optimizer.step()
         
-        return loss.item()
+        return total_loss.item()
 
     def evaluate(self, loader):
         self.model.eval()
@@ -77,10 +78,12 @@ class MNISTLogicalExperiment:
                 images = images.to(self.device)
                 labels = labels.to(self.device)
                 
-                outputs = self.model(images)
-                # For SphericalActivation, the output is a vector on the sphere.
-                # The class with the highest value (closest to the axis if one-hot) is the prediction.
-                _, predicted = torch.max(outputs.data, 1)
+                # Forward pass
+                _, _, z2, _ = self.model(images)
+                
+                # z2 is amplitude, z2^2 is probability
+                probs = z2 ** 2
+                _, predicted = torch.max(probs, 1)
                 
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()

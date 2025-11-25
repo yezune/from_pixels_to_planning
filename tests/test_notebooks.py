@@ -37,14 +37,22 @@ class TestNotebooks(unittest.TestCase):
                 # Reduce training loops
                 source = source.replace('range(50)', 'range(1)')
                 source = source.replace('range(100)', 'range(1)')
+                source = source.replace('range(2000)', 'range(10)') # Added for NB 03
                 source = source.replace('num_steps=200', 'num_steps=10')
                 source = source.replace('num_steps=1000', 'num_steps=10')
                 source = source.replace('num_epochs=5', 'num_epochs=1')
                 source = source.replace('epochs=3', 'epochs=1')
                 source = source.replace('epochs=5', 'epochs=1')
+                source = source.replace('epochs = 50', 'epochs = 1') # Added for NB 03
+                source = source.replace('num_episodes = 3', 'num_episodes = 1') # Added for NB 04
                 source = source.replace('batch_size=64', 'batch_size=4')
                 source = source.replace('batch_size=16', 'batch_size=4')
+                source = source.replace('batch_size = 32', 'batch_size = 4') # Added for NB 03
                 
+                # Break long loops in NB 01
+                if 'for x, y in loader:' in source:
+                    source = source.replace('for x, y in loader:', 'for i, (x, y) in enumerate(loader):\n            if i > 2: break')
+
                 # Handle potential display/render issues in headless env
                 if 'plt.show()' in source:
                     # plt.show() usually doesn't block in nbconvert, but good to know

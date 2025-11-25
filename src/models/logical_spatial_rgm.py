@@ -9,11 +9,12 @@ class LogicalSpatialRGM(nn.Module):
     Replaces Gumbel-Softmax with Spherical Activation (L2 Normalization).
     Latent states are represented as points on a hypersphere.
     """
-    def __init__(self, input_channels=1, hidden_dim=64, latent_dim=32, num_classes=10):
+    def __init__(self, input_channels=1, hidden_dim=64, latent_dim=32, num_classes=10, img_size=28):
         super(LogicalSpatialRGM, self).__init__()
         
         self.latent_dim = latent_dim
         self.num_classes = num_classes
+        self.feature_map_size = img_size // 4
         
         # --- Level 1: Bottom-Up (Pixels -> z1) ---
         self.enc1 = nn.Sequential(
@@ -22,14 +23,14 @@ class LogicalSpatialRGM(nn.Module):
             nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1), # 7x7
             nn.ReLU()
         )
-        # 7x7 grid of spherical variables
+        # Grid of spherical variables
         self.z1_proj = nn.Conv2d(64, latent_dim, kernel_size=1)
         self.z1_act = SphericalActivation(dim=1) # Normalize across channel dim (latent_dim)
         
         # --- Level 2: Bottom-Up (z1 -> z2) ---
         self.enc2 = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(latent_dim * 7 * 7, hidden_dim),
+            nn.Linear(latent_dim * self.feature_map_size * self.feature_map_size, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, num_classes),
             SphericalActivation(dim=1) # Normalize across classes
@@ -39,7 +40,7 @@ class LogicalSpatialRGM(nn.Module):
         self.dec2 = nn.Sequential(
             nn.Linear(num_classes, hidden_dim),
             nn.ReLU(),
-            nn.Linear(hidden_dim, latent_dim * 7 * 7)
+            nn.Linear(hidden_dim, latent_dim * self.feature_map_size * self.feature_map_size)
             # We will apply SphericalActivation after reshaping
         )
         
@@ -68,7 +69,7 @@ class LogicalSpatialRGM(nn.Module):
         
         # 3. Predict Level 1 Prior (z2 -> z1_prior)
         z1_prior_flat = self.dec2(z2)
-        z1_prior_logits = z1_prior_flat.view(-1, self.latent_dim, 7, 7)
+        z1_prior_logits = z1_prior_flat.view(-1, self.latent_dim, self.feature_map_size, self.feature_map_size)
         z1_prior = self.z1_act(z1_prior_logits) # Normalized
         
         # 4. Decode Level 1 (z1 -> Pixels)
