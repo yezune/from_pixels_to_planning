@@ -125,7 +125,11 @@ class HierarchicalTrainer(BaseTrainer):
                 act_list = traj['actions']
                 
                 # Convert to tensors
-                obs_tensor = torch.tensor(np.array(obs_list), dtype=torch.float32, device=self.device)
+                if isinstance(obs_list[0], torch.Tensor):
+                    obs_tensor = torch.stack(obs_list).to(dtype=torch.float32, device=self.device)
+                else:
+                    obs_tensor = torch.tensor(np.array(obs_list), dtype=torch.float32, device=self.device)
+                
                 # Ensure (T, C, H, W)
                 if obs_tensor.dim() == 3: # (T, H, W) -> (T, 1, H, W)
                      obs_tensor = obs_tensor.unsqueeze(1)
